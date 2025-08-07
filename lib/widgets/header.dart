@@ -7,7 +7,7 @@ import 'package:start01/providers/UserProvider.dart';
 import 'package:start01/models/User.dart';
 import 'package:start01/models/Category.dart';
 
-// 기존 NotificationItem 클래스
+// Notification 모델
 class NotificationItem {
   final int id;
   final String content;
@@ -22,10 +22,8 @@ class NotificationItem {
   });
 }
 
-// StateProvider: UI 상태 (알림, 프로필 드롭다운)
+// 알림 상태 관리
 final showNotificationsProvider = StateProvider<bool>((ref) => false);
-
-// 알림 목록 Provider (StateProvider로 변경 가능한 목록 관리)
 final notificationsProvider = StateProvider<List<NotificationItem>>((ref) {
   return [
     NotificationItem(id: 1, content: '새로운 댓글이 달렸습니다', createdAt: '5분 전', isRead: false),
@@ -34,23 +32,50 @@ final notificationsProvider = StateProvider<List<NotificationItem>>((ref) {
   ];
 });
 
-// -----------------------------------------------------------
-
-class Layout extends ConsumerWidget {
+// 🧩 Layout 위젯 (Stateful)
+class Layout extends ConsumerStatefulWidget {
   final Widget child;
   const Layout({super.key, required this.child});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<Layout> createState() => _LayoutState();
+}
+
+class _LayoutState extends ConsumerState<Layout> {
+  int _selectedIndex = 0;
+
+  void _onItemTapped(int index) {
+    if (index == 2) return; // 가운데 + 버튼은 무시
+
+
+    setState(() {
+      _selectedIndex = index;
+    });
+
+    switch (index) {
+      case 0:
+        context.go('/');
+        break;
+      case 1:
+        context.go('/group');
+        break;
+      case 3:
+        context.go('/notifications');
+        break;
+      case 4:
+        context.go('/search');
+        break;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final categoriesAsyncValue = ref.watch(categoriesProvider);
     final userAsyncValue = ref.watch(userProvider);
     final notifications = ref.watch(notificationsProvider);
     final showNotifications = ref.watch(showNotificationsProvider);
-
     final unreadNotifications = notifications.where((n) => !n.isRead).toList();
 
-    // ✨ userAsyncValue.value를 직접 사용하여 로딩/에러 상태를 무시하고
-    // 로그인 여부만 판단합니다.
     final user = userAsyncValue.value;
     final isUserLoggedIn = user?.name.isNotEmpty ?? false;
 
@@ -86,7 +111,6 @@ class Layout extends ConsumerWidget {
         elevation: 1,
         actions: [
           if (isUserLoggedIn) ...[
-            // 2. 프로필 아바타 및 드롭다운
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: PopupMenuButton<String>(
@@ -132,14 +156,12 @@ class Layout extends ConsumerWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  user.name,
-                                  style: const TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                Text(
-                                  '@${user.account}',
-                                  style: const TextStyle(fontSize: 12, color: Colors.grey),
-                                ),
+                                Text(user.name,
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold)),
+                                Text('@${user.account}',
+                                    style: const TextStyle(
+                                        fontSize: 12, color: Colors.grey)),
                               ],
                             ),
                           ),
@@ -183,19 +205,17 @@ class Layout extends ConsumerWidget {
                       : Text(
                     user.name[0].toUpperCase(),
                     style: const TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.bold),
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
             ),
           ] else
-          // 로그인 버튼
             TextButton(
               onPressed: () => context.go('/login'),
-              child: Text(
-                '로그인',
-                style: TextStyle(color: Colors.grey[700]),
-              ),
+              child: Text('로그인',
+                  style: TextStyle(color: Colors.grey[700])),
             ),
         ],
       ),
@@ -228,7 +248,8 @@ class Layout extends ConsumerWidget {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              padding:
+              const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
               child: TextField(
                 decoration: InputDecoration(
                   hintText: '통합 검색',
@@ -241,13 +262,14 @@ class Layout extends ConsumerWidget {
                   fillColor: Colors.grey.shade200,
                 ),
                 onChanged: (value) {
-                  // 검색 로직
+                  // TODO: 검색 로직
                 },
               ),
             ),
             Expanded(
               child: categoriesAsyncValue.when(
-                loading: () => const Center(child: CircularProgressIndicator()),
+                loading: () =>
+                const Center(child: CircularProgressIndicator()),
                 error: (err, stack) => Center(child: Text('에러: $err')),
                 data: (categories) => ListView(
                   padding: EdgeInsets.zero,
@@ -263,7 +285,46 @@ class Layout extends ConsumerWidget {
           ],
         ),
       ),
-      body: child,
+      body: widget.child,
+
+      // ✅ 하단 네비게이션
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex > 2 ? _selectedIndex : _selectedIndex,
+        onTap: _onItemTapped,
+        type: BottomNavigationBarType.fixed,
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: '홈',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.playlist_play),
+            label: '플레이리스트',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.add, color: Colors.transparent),
+            label: '',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.notifications),
+            label: '알림',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.search),
+            label: '검색',
+          ),
+        ],
+      ),
+
+      // ✅ 가운데 + 버튼
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          context.go('/upload'); // 원하는 경로로 이동
+        },
+        backgroundColor: Colors.blue,
+        child: const Icon(Icons.add, color: Colors.white),
+      ),
     );
   }
 }
