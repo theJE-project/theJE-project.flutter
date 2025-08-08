@@ -95,6 +95,61 @@ class _LayoutState extends ConsumerState<Layout> {
       ref.read(showNotificationsProvider.notifier).state = false;
     }
 
+    List<BottomNavigationBarItem> buildBottomNavigationItems() {
+      return [
+        const BottomNavigationBarItem(
+          icon: Icon(Icons.home),
+          label: '홈',
+        ),
+        const BottomNavigationBarItem(
+          icon: Icon(Icons.playlist_play),
+          label: '플레이리스트',
+        ),
+        const BottomNavigationBarItem(
+          icon: Icon(Icons.add, color: Colors.transparent),
+          label: '',
+        ),
+        BottomNavigationBarItem(
+          icon: Stack(
+            clipBehavior: Clip.none, // 자르지 않도록 설정
+            children: [
+              const Icon(Icons.notifications),
+              if (unreadNotifications.isNotEmpty)
+                Positioned(
+                  top: -5, // 위로 약간 띄우기
+                  left: 12.5, // 왼쪽 여백 추가
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 20, // 최소 너비
+                      minHeight: 20, // 최소 높이
+                    ),
+                    child: Text(
+                      '${unreadNotifications.length > 9 ? '9+' : unreadNotifications.length}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          label: '알림',
+        ),
+        const BottomNavigationBarItem(
+          icon: Icon(Icons.search),
+          label: '검색',
+        ),
+      ];
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: GestureDetector(
@@ -286,36 +341,13 @@ class _LayoutState extends ConsumerState<Layout> {
         ),
       ),
       body: widget.child,
-
       // ✅ 하단 네비게이션
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex > 2 ? _selectedIndex : _selectedIndex,
         onTap: _onItemTapped,
         type: BottomNavigationBarType.fixed,
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: '홈',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.playlist_play),
-            label: '플레이리스트',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.add, color: Colors.transparent),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.notifications),
-            label: '알림',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: '검색',
-          ),
-        ],
+        items: buildBottomNavigationItems(),
       ),
-
       // ✅ 가운데 + 버튼
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
