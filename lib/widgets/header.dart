@@ -4,35 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:start01/providers/CategoriesProvider.dart';
 import 'package:start01/providers/UserProvider.dart';
-import 'package:start01/models/User.dart';
-import 'package:start01/models/Category.dart';
+import 'package:start01/providers/NotificationsProvider.dart'; // ✅ 알림 Provider import
+import 'package:start01/models/notifications.dart';
+import 'package:start01/services/notifications_service.dart'; // ✅ 서비스 import
 
-// Notification 모델
-class NotificationItem {
-  final int id;
-  final String content;
-  final String createdAt;
-  final bool isRead;
-
-  NotificationItem({
-    required this.id,
-    required this.content,
-    required this.createdAt,
-    required this.isRead,
-  });
-}
-
-// 알림 상태 관리
-final showNotificationsProvider = StateProvider<bool>((ref) => false);
-final notificationsProvider = StateProvider<List<NotificationItem>>((ref) {
-  return [
-    NotificationItem(id: 1, content: '새로운 댓글이 달렸습니다', createdAt: '5분 전', isRead: false),
-    NotificationItem(id: 2, content: '친구 요청이 있습니다', createdAt: '1시간 전', isRead: false),
-    NotificationItem(id: 3, content: '게시글이 삭제되었습니다', createdAt: '2시간 전', isRead: true),
-  ];
-});
-
-// 🧩 Layout 위젯 (Stateful)
 class Layout extends ConsumerStatefulWidget {
   final Widget child;
   const Layout({super.key, required this.child});
@@ -45,9 +20,6 @@ class _LayoutState extends ConsumerState<Layout> {
   int _selectedIndex = 0;
 
   void _onItemTapped(int index) {
-    if (index == 2) return; // 가운데 + 버튼은 무시
-
-
     setState(() {
       _selectedIndex = index;
     });
@@ -59,10 +31,10 @@ class _LayoutState extends ConsumerState<Layout> {
       case 1:
         context.go('/group');
         break;
-      case 3:
+      case 2:
         context.go('/notifications');
         break;
-      case 4:
+      case 3:
         context.go('/search');
         break;
     }
@@ -72,30 +44,17 @@ class _LayoutState extends ConsumerState<Layout> {
   Widget build(BuildContext context) {
     final categoriesAsyncValue = ref.watch(categoriesProvider);
     final userAsyncValue = ref.watch(userProvider);
-    final notifications = ref.watch(notificationsProvider);
     final showNotifications = ref.watch(showNotificationsProvider);
-    final unreadNotifications = notifications.where((n) => !n.isRead).toList();
 
     final user = userAsyncValue.value;
     final isUserLoggedIn = user?.name.isNotEmpty ?? false;
 
-    void markNotificationAsRead(NotificationItem notification) {
-      final updatedNotifications = notifications.map((n) {
-        if (n.id == notification.id) {
-          return NotificationItem(
-            id: n.id,
-            content: n.content,
-            createdAt: n.createdAt,
-            isRead: true,
-          );
-        }
-        return n;
-      }).toList();
-      ref.read(notificationsProvider.notifier).state = updatedNotifications;
-      ref.read(showNotificationsProvider.notifier).state = false;
-    }
+    // ✅ 로그인된 경우만 알림 API 호출
+    final notificationsAsyncValue = (user != null && user.id.isNotEmpty)
+        ? ref.watch(notificationsProvider(user.id))
+        : const AsyncValue.data(<Notifications>[]);
 
-    List<BottomNavigationBarItem> buildBottomNavigationItems() {
+    List<BottomNavigationBarItem> buildBottomNavigationItems(int unreadCount) {
       return [
         const BottomNavigationBarItem(
           icon: Icon(Icons.home),
@@ -105,31 +64,26 @@ class _LayoutState extends ConsumerState<Layout> {
           icon: Icon(Icons.playlist_play),
           label: '플레이리스트',
         ),
-        const BottomNavigationBarItem(
-          icon: Icon(Icons.add, color: Colors.transparent),
-          label: '',
-        ),
         BottomNavigationBarItem(
           icon: Stack(
-            clipBehavior: Clip.none, // 자르지 않도록 설정
+            clipBehavior: Clip.none,
             children: [
               const Icon(Icons.notifications),
-              if (unreadNotifications.isNotEmpty)
+              if (unreadCount > 0)
                 Positioned(
-                  top: -5, // 위로 약간 띄우기
-                  left: 12.5, // 왼쪽 여백 추가
+                  top: -5,
+                  left: 12.5,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding:
+                    const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
                       color: Colors.red,
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    constraints: const BoxConstraints(
-                      minWidth: 20, // 최소 너비
-                      minHeight: 20, // 최소 높이
-                    ),
+                    constraints:
+                    const BoxConstraints(minWidth: 20, minHeight: 20),
                     child: Text(
-                      '${unreadNotifications.length > 9 ? '9+' : unreadNotifications.length}',
+                      '${unreadCount > 9 ? '9+' : unreadCount}',
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 10,
@@ -165,7 +119,7 @@ class _LayoutState extends ConsumerState<Layout> {
         backgroundColor: Colors.white,
         elevation: 1,
         actions: [
-          if (isUserLoggedIn) ...[
+          if (isUserLoggedIn)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: PopupMenuButton<String>(
@@ -181,7 +135,8 @@ class _LayoutState extends ConsumerState<Layout> {
                     context.go('/');
                   }
                 },
-                itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                itemBuilder: (BuildContext context) =>
+                <PopupMenuEntry<String>>[
                   PopupMenuItem<String>(
                     enabled: false,
                     child: Padding(
@@ -265,12 +220,12 @@ class _LayoutState extends ConsumerState<Layout> {
                   ),
                 ),
               ),
-            ),
-          ] else
+            )
+          else
             TextButton(
               onPressed: () => context.go('/login'),
-              child: Text('로그인',
-                  style: TextStyle(color: Colors.grey[700])),
+              child:
+              Text('로그인', style: TextStyle(color: Colors.grey[700])),
             ),
         ],
       ),
@@ -293,18 +248,16 @@ class _LayoutState extends ConsumerState<Layout> {
                     const SizedBox(height: 8),
                     const Text(
                       '음악을 공유하는 공간',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.white70,
-                      ),
+                      style:
+                      TextStyle(fontSize: 14, color: Colors.white70),
                     ),
                   ],
                 ),
               ),
             ),
             Padding(
-              padding:
-              const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 16.0, vertical: 8.0),
               child: TextField(
                 decoration: InputDecoration(
                   hintText: '통합 검색',
@@ -325,7 +278,8 @@ class _LayoutState extends ConsumerState<Layout> {
               child: categoriesAsyncValue.when(
                 loading: () =>
                 const Center(child: CircularProgressIndicator()),
-                error: (err, stack) => Center(child: Text('에러: $err')),
+                error: (err, stack) =>
+                    Center(child: Text('에러: $err')),
                 data: (categories) => ListView(
                   padding: EdgeInsets.zero,
                   children: categories.map((category) {
@@ -341,21 +295,31 @@ class _LayoutState extends ConsumerState<Layout> {
         ),
       ),
       body: widget.child,
-      // ✅ 하단 네비게이션
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex > 2 ? _selectedIndex : _selectedIndex,
-        onTap: _onItemTapped,
-        type: BottomNavigationBarType.fixed,
-        items: buildBottomNavigationItems(),
-      ),
-      // ✅ 가운데 + 버튼
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          context.go('/upload'); // 원하는 경로로 이동
+
+      // ✅ 하단 네비게이션 (알림 개수 반영)
+      bottomNavigationBar: notificationsAsyncValue.when(
+        loading: () => BottomNavigationBar(
+          currentIndex: _selectedIndex,
+          onTap: _onItemTapped,
+          type: BottomNavigationBarType.fixed,
+          items: buildBottomNavigationItems(0),
+        ),
+        error: (err, stack) => BottomNavigationBar(
+          currentIndex: _selectedIndex,
+          onTap: _onItemTapped,
+          type: BottomNavigationBarType.fixed,
+          items: buildBottomNavigationItems(0),
+        ),
+        data: (notifications) {
+          final unreadCount =
+              notifications.where((n) => !n.isRead).length;
+          return BottomNavigationBar(
+            currentIndex: _selectedIndex,
+            onTap: _onItemTapped,
+            type: BottomNavigationBarType.fixed,
+            items: buildBottomNavigationItems(unreadCount),
+          );
         },
-        backgroundColor: Colors.blue,
-        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }

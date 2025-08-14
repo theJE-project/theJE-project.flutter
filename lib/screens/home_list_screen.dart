@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
-import 'package:flutter_feather_icons/flutter_feather_icons.dart';
-
+import 'package:just_audio/just_audio.dart';
 import '../services/CommunitiesService.dart';
 
 class HomeListScreen extends StatefulWidget {
@@ -13,8 +12,10 @@ class HomeListScreen extends StatefulWidget {
 
 class _HomeListScreenState extends State<HomeListScreen> {
   final CommunitiesService service = CommunitiesService();
+  final AudioPlayer player = AudioPlayer();
 
-  String? previewUrl; // 음악 미리듣기용 URL 상태
+  // 음악 재생 상태만 관리
+  final ValueNotifier<String?> _playingNotifier = ValueNotifier(null);
 
   String getImageUrl(Map<String, dynamic>? img) {
     if (img == null) return '';
@@ -22,10 +23,31 @@ class _HomeListScreenState extends State<HomeListScreen> {
     return 'https://nvugjssjjxtbbjnwimek.supabase.co/storage/v1/object/public/media/$path';
   }
 
+  void togglePlay(Map<String, dynamic> music) async {
+    final url = music['preview'] as String?;
+    if (url == null) return;
+
+    if (_playingNotifier.value == url) {
+      await player.pause();
+      _playingNotifier.value = null;
+    } else {
+      await player.setUrl(url);
+      await player.play();
+      _playingNotifier.value = url;
+    }
+  }
+
+  @override
+  void dispose() {
+    player.dispose();
+    _playingNotifier.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<dynamic>>(
-      future: service.getFeed(category: 1),
+      future: service.getFeed(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -35,7 +57,6 @@ class _HomeListScreenState extends State<HomeListScreen> {
         }
 
         final communities = snapshot.data ?? [];
-
         if (communities.isEmpty) {
           return const Center(child: Text('게시글이 없습니다.'));
         }
@@ -45,13 +66,14 @@ class _HomeListScreenState extends State<HomeListScreen> {
           itemCount: communities.length,
           itemBuilder: (context, index) {
             final c = communities[index];
+            final musics = c['musics'] as List<dynamic>? ?? [];
 
             final createdAt = DateTime.tryParse(c['created_at'] ?? '') ?? DateTime.now();
             final timeAgo = timeago.format(createdAt);
 
             return GestureDetector(
               onTap: () {
-                // 상세보기 처리 (handleDetail)
+                // 상세보기 처리
               },
               child: Container(
                 margin: const EdgeInsets.only(bottom: 16),
@@ -64,7 +86,7 @@ class _HomeListScreenState extends State<HomeListScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // 프로필, 이름, 계정, 시간 등
+                    // 프로필, 이름, 계정, 시간
                     Row(
                       children: [
                         CircleAvatar(
@@ -77,10 +99,9 @@ class _HomeListScreenState extends State<HomeListScreen> {
                               ? Text(
                             c['users']['name'][0],
                             style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 20,
-                            ),
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 20),
                           )
                               : null,
                         ),
@@ -96,12 +117,14 @@ class _HomeListScreenState extends State<HomeListScreen> {
                               children: [
                                 Text(
                                   '@${c['users']?['account'] ?? 'unknown'}',
-                                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                                  style: TextStyle(
+                                      color: Colors.grey[600], fontSize: 12),
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
                                   timeAgo,
-                                  style: TextStyle(color: Colors.grey[400], fontSize: 10),
+                                  style: TextStyle(
+                                      color: Colors.grey[400], fontSize: 10),
                                 ),
                               ],
                             ),
@@ -116,7 +139,6 @@ class _HomeListScreenState extends State<HomeListScreen> {
                         ),
                       ],
                     ),
-
                     const SizedBox(height: 12),
                     // 글 내용
                     Text(
@@ -124,7 +146,73 @@ class _HomeListScreenState extends State<HomeListScreen> {
                       style: const TextStyle(fontSize: 14, color: Colors.black87),
                     ),
                     const SizedBox(height: 12),
-                    // 여기서부터 이미지 리스트 (부모폭에 맞게 가로 스크롤 없이 보여줌)
+                    // 음악 리스트
+                    if (musics.isNotEmpty)
+                      Column(
+                        children: musics.map((m) {
+                          return ValueListenableBuilder<String?>(
+                            valueListenable: _playingNotifier,
+                            builder: (context, playing, _) {
+                              final isPlaying = playing == m['preview'];
+                              return Container(
+                                margin: const EdgeInsets.symmetric(vertical: 4),
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[50],
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: Colors.grey[200]!),
+                                ),
+                                child: Row(
+                                  children: [
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: Image.network(
+                                        m['albumCover'] ?? '',
+                                        width: 64,
+                                        height: 64,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            m['titleShort'] ?? '',
+                                            style: const TextStyle(
+                                                fontWeight: FontWeight.bold),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          Text(
+                                            m['artistName'] ?? '',
+                                            style: const TextStyle(
+                                                fontSize: 12,
+                                                color: Colors.grey),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    IconButton(
+                                      icon: Icon(
+                                        isPlaying
+                                            ? Icons.play_arrow
+                                            : Icons.play_arrow,
+                                        color: Colors.blue[600],
+                                      ),
+                                      onPressed: () => togglePlay(m),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          );
+                        }).toList(),
+                      ),
+                    const SizedBox(height: 12),
+                    // 이미지 리스트
                     if (c['images'] != null && (c['images'] as List).isNotEmpty)
                       LayoutBuilder(
                         builder: (context, constraints) {
@@ -132,9 +220,9 @@ class _HomeListScreenState extends State<HomeListScreen> {
                           final images = c['images'] as List;
                           final itemCount = images.length;
 
-                          // 이미지 간격 8, 이미지 크기 동적 계산 (최대 3장까지 한 줄에)
                           final maxImagesPerRow = 3;
-                          final imagesPerRow = itemCount < maxImagesPerRow ? itemCount : maxImagesPerRow;
+                          final imagesPerRow =
+                          itemCount < maxImagesPerRow ? itemCount : maxImagesPerRow;
                           final spacing = 8 * (imagesPerRow - 1);
                           final imageWidth = (maxWidth - spacing) / imagesPerRow;
 
@@ -161,35 +249,36 @@ class _HomeListScreenState extends State<HomeListScreen> {
                           );
                         },
                       ),
-
+                    const SizedBox(height: 12),
                     // 댓글/좋아요
-                    Padding(
-                      padding: const EdgeInsets.only(top: 12),
-                      child: Row(
-                        children: [
-                          Row(
-                            children: [
-                              const Icon(Icons.comment_outlined, size: 16, color: Colors.grey),
-                              const SizedBox(width: 4),
-                              Text(
-                                c['comments']?.toString() ?? '0',
-                                style: const TextStyle(color: Colors.grey, fontSize: 12),
-                              )
-                            ],
-                          ),
-                          const SizedBox(width: 16),
-                          Row(
-                            children: [
-                              const Icon(Icons.favorite_border, size: 16, color: Colors.grey),
-                              const SizedBox(width: 4),
-                              Text(
-                                c['likes']?.toString() ?? '0',
-                                style: const TextStyle(color: Colors.grey, fontSize: 12),
-                              )
-                            ],
-                          ),
-                        ],
-                      ),
+                    Row(
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.comment_outlined,
+                                size: 16, color: Colors.grey),
+                            const SizedBox(width: 4),
+                            Text(
+                              c['comments']?.toString() ?? '0',
+                              style: const TextStyle(
+                                  color: Colors.grey, fontSize: 12),
+                            )
+                          ],
+                        ),
+                        const SizedBox(width: 16),
+                        Row(
+                          children: [
+                            const Icon(Icons.favorite_border,
+                                size: 16, color: Colors.grey),
+                            const SizedBox(width: 4),
+                            Text(
+                              c['likes']?.toString() ?? '0',
+                              style: const TextStyle(
+                                  color: Colors.grey, fontSize: 12),
+                            )
+                          ],
+                        ),
+                      ],
                     ),
                   ],
                 ),

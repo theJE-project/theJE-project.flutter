@@ -5,14 +5,16 @@ import 'UserService.dart';
 class CommunitiesService {
   final String baseUrl = "http://localhost:8888/api";
   final bool following;
+  final int category; // 생성자에서 받을 category
   final UserService _userService = UserService();
 
-  CommunitiesService({this.following = false});
+  CommunitiesService({this.following = false, this.category = 1});
 
-  Future<List<dynamic>> getCommunities({int category = 1}) async {
+  Future<List<dynamic>> getCommunities({int? overrideCategory}) async {
+    final cat = overrideCategory ?? category;
     try {
       final uri = Uri.parse('$baseUrl/communities').replace(queryParameters: {
-        'category': category.toString(),
+        'category': cat.toString(),
       });
       final response = await http.get(uri);
 
@@ -29,7 +31,8 @@ class CommunitiesService {
     }
   }
 
-  Future<List<dynamic>> getCommunitiesByUser({int category = 1}) async {
+  Future<List<dynamic>> getCommunitiesByUser({int? overrideCategory}) async {
+    final cat = overrideCategory ?? category;
     try {
       final user = await _userService.getUserId();
       if (user == null) {
@@ -38,7 +41,7 @@ class CommunitiesService {
       }
 
       final uri = Uri.parse('$baseUrl/communities/byUser').replace(queryParameters: {
-        'category': category.toString(),
+        'category': cat.toString(),
         'user': user,
       });
       final response = await http.get(uri);
@@ -56,7 +59,8 @@ class CommunitiesService {
     }
   }
 
-  Future<List<dynamic>> getFollowingCommunities({int category = 1}) async {
+  Future<List<dynamic>> getFollowingCommunities({int? overrideCategory}) async {
+    final cat = overrideCategory ?? category;
     try {
       final user = await _userService.getUserId();
       if (user == null) {
@@ -65,7 +69,7 @@ class CommunitiesService {
       }
 
       final uri = Uri.parse('$baseUrl/communities/followee').replace(queryParameters: {
-        'category': category.toString(),
+        'category': cat.toString(),
         'user': user,
       });
       final response = await http.get(uri);
@@ -83,16 +87,17 @@ class CommunitiesService {
     }
   }
 
-  Future<List<dynamic>> getFeed({int category = 1}) async {
+  Future<List<dynamic>> getFeed({int? overrideCategory}) async {
+    final cat = overrideCategory ?? category;
     final userId = await _userService.getUserId();
 
     if (userId == null) {
-      return await getCommunities(category: category);
+      return await getCommunities(overrideCategory: cat);
     } else {
       if(following){
-        return await getFollowingCommunities(category: category);
+        return await getFollowingCommunities(overrideCategory: cat);
       }
-      return await getCommunitiesByUser(category: category);
+      return await getCommunitiesByUser(overrideCategory: cat);
     }
   }
 }

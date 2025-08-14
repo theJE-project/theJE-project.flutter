@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../models/notifications.dart';
 import '../services/notifications_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:go_router/go_router.dart';
 
 class NotificationsListScreen extends StatefulWidget {
   @override
@@ -26,7 +28,24 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
     });
 
     try {
-      const receiverId = 'df1305ff-7e8d-42fd-aa11-f707a4ccea7c'; // 예시 ID
+      final prefs = await SharedPreferences.getInstance();
+      final receiverId = prefs.getString('user-id') ?? '';
+
+      if (receiverId.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('⚠️ 로그인이 필요 합니다.'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 3),
+          ),
+        );
+
+        context.go('/');
+        setState(() {
+          notifications = [];
+          loading = false;
+        });
+      }
       final result = await NotificationsService.fetchNotifications(receiverId);
       setState(() {
         notifications = result;
@@ -35,6 +54,7 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
       setState(() {
         error = e.toString();
       });
+      print('❌ 알림 가져오기 실패: $e');
     } finally {
       setState(() {
         loading = false;
@@ -43,16 +63,25 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
   }
 
   Future<void> markAllAsRead() async {
-    const receiverId = 'df1305ff-7e8d-42fd-aa11-f707a4ccea7c';
+    final prefs = await SharedPreferences.getInstance();
+    final receiverId = prefs.getString('user-id') ?? '';
+    if (receiverId.isEmpty) {
+      print('⚠️ 로그인된 사용자 ID가 없습니다.');
+      return;
+    }
+
     try {
       await NotificationsService.markAllAsRead(receiverId);
       setState(() {
-        notifications = notifications.map((n) => n.copyWith(isRead: true)).toList().cast<Notifications>();
+        notifications =
+            notifications.map((n) => n.copyWith(isRead: true)).toList().cast<Notifications>();
       });
+      print('✅ 모든 알림을 읽음 처리 완료');
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('모두 읽음 처리 실패: $e'), backgroundColor: Colors.red),
       );
+      print('❌ 모두 읽음 처리 실패: $e');
     }
   }
 
@@ -82,7 +111,6 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
     return '${date.year}.${date.month}.${date.day}';
   }
 
-
   @override
   Widget build(BuildContext context) {
     final filtered = filter == 0
@@ -90,7 +118,6 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
         : filter == 9
         ? notifications.where((n) => !n.isRead).toList()
         : notifications.where((n) => n.boardTypes == filter).toList();
-
     final sorted = [...filtered]..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
     return Scaffold(
@@ -117,7 +144,7 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
               padding: const EdgeInsets.symmetric(vertical: 10),
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16), // ✅ 좌우 여백 추가
+                padding: const EdgeInsets.symmetric(horizontal: 16), // 좌우 여백
                 child: Row(
                   children: [
                     buildFilterButton('전체', 0, Colors.blue),
@@ -132,36 +159,36 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
             ),
             Expanded(
               child: ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 16), // ✅ 리스트 좌우 여백
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 itemCount: sorted.length,
                 itemBuilder: (context, index) {
                   final n = sorted[index];
                   return Container(
                     decoration: BoxDecoration(
-                      color: !n.isRead ? Colors.blue.shade100 : null,  // 읽지 않은 알림 파란색 배경
-                      borderRadius: BorderRadius.circular(8),          // 모서리 둥글게 (선택 사항)
+                      color: !n.isRead ? Colors.blue.shade100 : null,
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    margin: const EdgeInsets.symmetric(vertical: 4),   // 위아래 간격 (선택 사항)
+                    margin: const EdgeInsets.symmetric(vertical: 4),
                     child: ListTile(
-                      leading: CircleAvatar(
-                        child: Icon(Icons.person),
-                      ),
+                      leading: CircleAvatar(child: Icon(Icons.person)),
                       title: Text('${n.name} ${getMessage(n)}'),
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          if (n.content.isNotEmpty) Text(n.content),
-                          Text('${timeAgo(n.createdAt)}',
-                              style: TextStyle(fontSize: 12, color: Colors.grey)),
+                          if (n.content != null && n.content!.isNotEmpty)
+                            Text(n.content!),
+                          Text(
+                            '${timeAgo(n.createdAt)}',
+                            style: TextStyle(fontSize: 12, color: Colors.grey),
+                          ),
                         ],
                       ),
                       trailing: !n.isRead
                           ? Icon(Icons.circle, size: 10, color: Colors.blue)
                           : null,
-                      onTap: () {
-                        // TODO: 상세 이동
-                      },
-                      contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                      onTap: () {},
+                      contentPadding:
+                      const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                     ),
                   );
                 },
@@ -186,6 +213,7 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
           setState(() {
             filter = type;
           });
+          print('🔍 필터: $label 적용됨');
         },
         child: Text(label),
       ),

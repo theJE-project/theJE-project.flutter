@@ -9,6 +9,7 @@ import 'screens/home_list_screen.dart'; // 기존 CategoryListScreen 클래스 �
 import 'screens/playlist_screen.dart';     // 플레이리스트 화면
 import 'screens/notifications_screen.dart';// 알림 화면
 import 'screens/search_screen.dart';       // 검색 화면
+import 'screens/MyScreen.dart';
 
 class Home extends StatelessWidget {
   const Home({super.key});
@@ -45,6 +46,10 @@ final _router = GoRouter(
         GoRoute(
           path: '/notifications',
           builder: (context, state) => NotificationsListScreen(),
+        ),
+        GoRoute(
+          path: "/my",
+          builder: (context, state) => MyScreen(),
         ),
         GoRoute(
           path: '/',

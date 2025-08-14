@@ -4,12 +4,12 @@ class Notifications {
   final String receiver;
   final int board;
   final int boardTypes;
-  final String content;
+  final String? content;
   final DateTime createdAt;
-  final DateTime updatedAt;
+  final DateTime? updatedAt;
   final bool isRead;
   final bool isDelete;
-  final String name; // JOIN users 로 가져온 사용자 이름
+  final String name; // JOIN users로 가져온 사용자 이름
 
   Notifications({
     required this.id,
@@ -27,17 +27,19 @@ class Notifications {
 
   factory Notifications.fromJson(Map<String, dynamic> json) {
     return Notifications(
-      id: json['id'],
-      sender: json['sender'],
-      receiver: json['receiver'],
-      board: json['board'],
-      boardTypes: json['board_types'],
-      content: json['content'],
-      createdAt: DateTime.parse(json['created_at']),
-      updatedAt: DateTime.parse(json['updated_at']),
-      isRead: json['is_read'],
-      isDelete: json['is_delete'],
-      name: json['name'] ?? '',
+      id: json['id'] as int,
+      sender: json['sender'] as String,
+      receiver: json['receiver'] as String,
+      board: json['board'] as int,
+      boardTypes: json['board_types'] as int,
+      content: json['content'] as String?,
+      createdAt: DateTime.parse(json['created_at'] as String),
+      updatedAt: json['updated_at'] != null
+          ? DateTime.tryParse(json['updated_at'] as String)
+          : null,
+      isRead: json['is_read'] as bool,
+      isDelete: json['is_delete'] as bool,
+      name: (json['name'] as String?) ?? '',
     );
   }
 

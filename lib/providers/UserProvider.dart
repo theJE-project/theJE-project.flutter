@@ -24,7 +24,7 @@ class UserNotifier extends StateNotifier<AsyncValue<User>> {
         return;
       }
 
-      final res = await http.get(Uri.parse('http://localhost:8888/api/users/$userId'));
+      final res = await http.get(Uri.parse('http://localhost:8888/api/users/my?userId=$userId'));
       if (res.statusCode == 200) {
         final decodedBody = utf8.decode(res.bodyBytes);
         final user = User.fromJson(jsonDecode(decodedBody));
