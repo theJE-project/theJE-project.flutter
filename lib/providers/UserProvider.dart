@@ -29,6 +29,7 @@ class UserNotifier extends StateNotifier<AsyncValue<User>> {
         final decodedBody = utf8.decode(res.bodyBytes);
         final user = User.fromJson(jsonDecode(decodedBody));
         state = AsyncValue.data(user);
+
       } else {
         print('⚠️ 사용자 정보를 불러오지 못했습니다. 상태 코드: ${res.statusCode}');
         state = AsyncValue.data(User.empty());

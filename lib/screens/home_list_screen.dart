@@ -93,9 +93,9 @@ class _HomeListScreenState extends State<HomeListScreen> {
                           radius: 20,
                           backgroundColor: Colors.blue[500],
                           backgroundImage: c['users']?['img'] != null
-                              ? NetworkImage(c['users']['img'])
+                              ? NetworkImage("https://nvugjssjjxtbbjnwimek.supabase.co/storage/v1/object/public/media/${c['users']['img']}")
                               : null,
-                          child: c['users']?['img'] == null && c['users']?['name'] != null
+                          child: c['users']?['img'] == "" && c['users']?['name'] != null
                               ? Text(
                             c['users']['name'][0],
                             style: const TextStyle(

@@ -14,7 +14,7 @@ class User {
     required this.role,
     required this.name,
     required this.email,
-    this.img,
+    required this.img,
     required this.isAlert,
     required this.content,
   });
@@ -39,7 +39,7 @@ class User {
       role: '',
       name: '',
       email: '',
-      img: null,
+      img: '',
       isAlert: false,
       content: '',
     );

@@ -48,7 +48,6 @@ class _LayoutState extends ConsumerState<Layout> {
 
     final user = userAsyncValue.value;
     final isUserLoggedIn = user?.name.isNotEmpty ?? false;
-
     // ✅ 로그인된 경우만 알림 API 호출
     final notificationsAsyncValue = (user != null && user.id.isNotEmpty)
         ? ref.watch(notificationsProvider(user.id))
@@ -145,13 +144,13 @@ class _LayoutState extends ConsumerState<Layout> {
                         children: [
                           CircleAvatar(
                             backgroundColor: Colors.blue[600],
-                            child: user!.img != null
+                            child: user.img != ""
                                 ? ClipOval(
                               child: Image.network(
-                                user.img!,
+                                "https://nvugjssjjxtbbjnwimek.supabase.co/storage/v1/object/public/media/${user?.img}",
                                 fit: BoxFit.cover,
-                                width: 32,
-                                height: 32,
+                                width: 36,
+                                height: 36,
                               ),
                             )
                                 : Text(
@@ -203,13 +202,19 @@ class _LayoutState extends ConsumerState<Layout> {
                 ],
                 child: CircleAvatar(
                   backgroundColor: Colors.blue[600],
-                  child: user!.img != null
+                  child: user!.img != null && user!.img!.isNotEmpty
                       ? ClipOval(
                     child: Image.network(
-                      user.img!,
+                      "https://nvugjssjjxtbbjnwimek.supabase.co/storage/v1/object/public/media/${user!.img!}",
                       fit: BoxFit.cover,
                       width: 32,
                       height: 32,
+                      errorBuilder: (context, error, stackTrace) => Text(
+                        user!.name[0].toUpperCase(),
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold),
+                      ),
                     ),
                   )
                       : Text(
