@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'UserService.dart';
 
 class FollowersService {
-  final String baseUrl = "http://localhost:8888/api/followers";
+  final String baseUrl = "http://15.164.93.30:8888/api/followers";
   final UserService _userService = UserService();
 
   // type: 'followers' or 'following'

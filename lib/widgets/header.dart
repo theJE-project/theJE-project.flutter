@@ -34,9 +34,9 @@ class _LayoutState extends ConsumerState<Layout> {
       case 2:
         context.go('/notifications');
         break;
-      case 3:
-        context.go('/search');
-        break;
+      // case 3:
+      //   context.go('/search');
+      //   break;
     }
   }
 
@@ -96,10 +96,10 @@ class _LayoutState extends ConsumerState<Layout> {
           ),
           label: '알림',
         ),
-        const BottomNavigationBarItem(
-          icon: Icon(Icons.search),
-          label: '검색',
-        ),
+        // const BottomNavigationBarItem(
+        //   icon: Icon(Icons.search),
+        //   label: '검색',
+        // ),
       ];
     }
 
@@ -263,21 +263,21 @@ class _LayoutState extends ConsumerState<Layout> {
             Padding(
               padding: const EdgeInsets.symmetric(
                   horizontal: 16.0, vertical: 8.0),
-              child: TextField(
-                decoration: InputDecoration(
-                  hintText: '통합 검색',
-                  prefixIcon: const Icon(Icons.search),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(9999),
-                    borderSide: BorderSide.none,
-                  ),
-                  filled: true,
-                  fillColor: Colors.grey.shade200,
-                ),
-                onChanged: (value) {
-                  // TODO: 검색 로직
-                },
-              ),
+              // child: TextField(
+              //   decoration: InputDecoration(
+              //     hintText: '통합 검색',
+              //     prefixIcon: const Icon(Icons.search),
+              //     border: OutlineInputBorder(
+              //       borderRadius: BorderRadius.circular(9999),
+              //       borderSide: BorderSide.none,
+              //     ),
+              //     filled: true,
+              //     fillColor: Colors.grey.shade200,
+              //   ),
+              //   onChanged: (value) {
+              //     // TODO: 검색 로직
+              //   },
+              // ),
             ),
             Expanded(
               child: categoriesAsyncValue.when(
@@ -300,7 +300,6 @@ class _LayoutState extends ConsumerState<Layout> {
         ),
       ),
       body: widget.child,
-
       // ✅ 하단 네비게이션 (알림 개수 반영)
       bottomNavigationBar: notificationsAsyncValue.when(
         loading: () => BottomNavigationBar(

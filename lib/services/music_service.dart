@@ -5,7 +5,7 @@ import '../models/music.dart';
 
 class MusicService {
   static Future<List<Music>> fetchMusics(String query) async {
-    final uri = Uri.parse('http://10.0.2.2:8888/api/tracks/search?q=$query');
+    final uri = Uri.parse('http://15.164.93.30:8888/api/tracks/search?q=$query');
     final response = await http.get(uri);
     final decodedBody = utf8.decode(response.bodyBytes); // 한글 인코딩
 

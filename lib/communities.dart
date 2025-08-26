@@ -12,8 +12,7 @@ class FeedScreen extends StatefulWidget {
 }
 
 class _FeedScreenState extends State<FeedScreen> {
-  //final String apiUrl = 'http://10.0.2.2:8888/api/communities?category=1';
-  final String apiUrl = 'http://localhost:8888/api/communities?category=1';
+  final String apiUrl = 'http://15.164.93.30:8888/api/communities?category=1';
   List<dynamic> communities = [];
   bool loading = true;
 

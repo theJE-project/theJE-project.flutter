@@ -5,7 +5,7 @@ import '../models/notifications.dart';
 
 class NotificationsService {
   static Future<List<Notifications>> fetchNotifications(String receiverId) async {
-    final url = Uri.parse('http://localhost:8888/api/notifications/search');
+    final url = Uri.parse('http://15.164.93.30:8888/api/notifications/search');
     //final url = Uri.parse('http://10.0.2.2:8888/api/notifications/search');
     final response = await http.post(
       url,
@@ -23,7 +23,7 @@ class NotificationsService {
 
 
   static Future<void> markAllAsRead(String receiverId) async {
-    final uri = Uri.parse('http://localhost:8888/api/notifications/allRead');
+    final uri = Uri.parse('http://15.164.93.30:8888/api/notifications/allRead');
     //final uri = Uri.parse('http://10.0.2.2:8888/api/notifications/allRead');
     final response = await http.put(
       uri,
@@ -37,7 +37,7 @@ class NotificationsService {
   }
 
   static Future<void> markAsRead(String receiverId, int id, int board_types, int board) async {
-    final uri = Uri.parse('http://localhost:8888/api/notifications/allRead');
+    final uri = Uri.parse('http://15.164.93.30:8888/api/notifications/allRead');
     //final uri = Uri.parse('http://10.0.2.2:8888/api/notifications/allRead');
     final response = await http.put(
       uri,

@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'UserService.dart';
 
 class CommunitiesService {
-  final String baseUrl = "http://localhost:8888/api";
+  final String baseUrl = "http://15.164.93.30:8888/api";
   final bool following;
   final int category; // 생성자에서 받을 category
   final UserService _userService = UserService();

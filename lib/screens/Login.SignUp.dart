@@ -119,7 +119,7 @@ class _LosingSignUpState extends State<LosingSignUp> {
     });
     try {
       final response = await http.post(
-        Uri.parse('http://localhost:8888/api/users'),
+        Uri.parse('http://15.164.93.30:8888/api/users'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'name': _nameController.text,

@@ -36,7 +36,7 @@ class _LoginPageState extends ConsumerState<Login> { // ConsumerState로 변경
 
     try {
       final response = await http.post(
-        Uri.parse('http://localhost:8888/api/users/login'),
+        Uri.parse('http://15.164.93.30:8888/api/users/login'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'account': _accountController.text,

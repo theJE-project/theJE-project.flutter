@@ -39,10 +39,10 @@ final _router = GoRouter(
           path: '/group',
           builder: (context, state) => PlaylistScreen(),
         ),
-        GoRoute(
-          path: '/search',
-          builder: (context, state) => SearchListScreen(),
-        ),
+        // GoRoute(
+        //   path: '/search',
+        //   builder: (context, state) => SearchListScreen(),
+        // ),
         GoRoute(
           path: '/notifications',
           builder: (context, state) => NotificationsListScreen(),
