@@ -14,7 +14,6 @@ class _HomeListScreenState extends State<HomeListScreen> {
   final CommunitiesService service = CommunitiesService();
   final AudioPlayer player = AudioPlayer();
 
-  // 음악 재생 상태만 관리
   final ValueNotifier<String?> _playingNotifier = ValueNotifier(null);
 
   String getImageUrl(Map<String, dynamic>? img) {
@@ -92,10 +91,12 @@ class _HomeListScreenState extends State<HomeListScreen> {
                         CircleAvatar(
                           radius: 20,
                           backgroundColor: Colors.blue[500],
-                          backgroundImage: c['users']?['img'] != null
-                              ? NetworkImage("https://nvugjssjjxtbbjnwimek.supabase.co/storage/v1/object/public/media/${c['users']['img']}")
+                          backgroundImage: (c['users']?['img'] != null && c['users']?['img'] != "")
+                              ? NetworkImage(
+                              "https://nvugjssjjxtbbjnwimek.supabase.co/storage/v1/object/public/media/${c['users']['img']}")
                               : null,
-                          child: c['users']?['img'] == "" && c['users']?['name'] != null
+                          child: (c['users']?['img'] == null || c['users']?['img'] == "") &&
+                              c['users']?['name'] != null
                               ? Text(
                             c['users']['name'][0],
                             style: const TextStyle(

@@ -34,9 +34,9 @@ class _LayoutState extends ConsumerState<Layout> {
       case 2:
         context.go('/notifications');
         break;
-      // case 3:
-      //   context.go('/search');
-      //   break;
+    // case 3:
+    //   context.go('/search');
+    //   break;
     }
   }
 
@@ -44,10 +44,10 @@ class _LayoutState extends ConsumerState<Layout> {
   Widget build(BuildContext context) {
     final categoriesAsyncValue = ref.watch(categoriesProvider);
     final userAsyncValue = ref.watch(userProvider);
-    final showNotifications = ref.watch(showNotificationsProvider);
 
     final user = userAsyncValue.value;
     final isUserLoggedIn = user?.name.isNotEmpty ?? false;
+
     // ✅ 로그인된 경우만 알림 API 호출
     final notificationsAsyncValue = (user != null && user.id.isNotEmpty)
         ? ref.watch(notificationsProvider(user.id))
@@ -96,10 +96,6 @@ class _LayoutState extends ConsumerState<Layout> {
           ),
           label: '알림',
         ),
-        // const BottomNavigationBarItem(
-        //   icon: Icon(Icons.search),
-        //   label: '검색',
-        // ),
       ];
     }
 
@@ -144,17 +140,30 @@ class _LayoutState extends ConsumerState<Layout> {
                         children: [
                           CircleAvatar(
                             backgroundColor: Colors.blue[600],
-                            child: user.img != ""
+                            child: (user.img != null && user.img!.isNotEmpty)
                                 ? ClipOval(
                               child: Image.network(
-                                "https://nvugjssjjxtbbjnwimek.supabase.co/storage/v1/object/public/media/${user?.img}",
+                                "https://nvugjssjjxtbbjnwimek.supabase.co/storage/v1/object/public/media/${user.img}",
                                 fit: BoxFit.cover,
                                 width: 36,
                                 height: 36,
+                                errorBuilder:
+                                    (context, error, stackTrace) {
+                                  return Text(
+                                    user.name.isNotEmpty
+                                        ? user.name[0].toUpperCase()
+                                        : '?',
+                                    style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold),
+                                  );
+                                },
                               ),
                             )
                                 : Text(
-                              user.name[0].toUpperCase(),
+                              user.name.isNotEmpty
+                                  ? user.name[0].toUpperCase()
+                                  : '?',
                               style: const TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold),
@@ -202,23 +211,29 @@ class _LayoutState extends ConsumerState<Layout> {
                 ],
                 child: CircleAvatar(
                   backgroundColor: Colors.blue[600],
-                  child: user!.img != null && user!.img!.isNotEmpty
+                  child: (user!.img != null && user.img!.isNotEmpty)
                       ? ClipOval(
                     child: Image.network(
-                      "https://nvugjssjjxtbbjnwimek.supabase.co/storage/v1/object/public/media/${user!.img!}",
+                      "https://nvugjssjjxtbbjnwimek.supabase.co/storage/v1/object/public/media/${user.img}",
                       fit: BoxFit.cover,
                       width: 32,
                       height: 32,
-                      errorBuilder: (context, error, stackTrace) => Text(
-                        user!.name[0].toUpperCase(),
-                        style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold),
-                      ),
+                      errorBuilder: (context, error, stackTrace) {
+                        return Text(
+                          user.name.isNotEmpty
+                              ? user.name[0].toUpperCase()
+                              : '?',
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold),
+                        );
+                      },
                     ),
                   )
                       : Text(
-                    user.name[0].toUpperCase(),
+                    user.name.isNotEmpty
+                        ? user.name[0].toUpperCase()
+                        : '?',
                     style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold),
@@ -253,38 +268,21 @@ class _LayoutState extends ConsumerState<Layout> {
                     const SizedBox(height: 8),
                     const Text(
                       '음악을 공유하는 공간',
-                      style:
-                      TextStyle(fontSize: 14, color: Colors.white70),
+                      style: TextStyle(fontSize: 14, color: Colors.white70),
                     ),
                   ],
                 ),
               ),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 16.0, vertical: 8.0),
-              // child: TextField(
-              //   decoration: InputDecoration(
-              //     hintText: '통합 검색',
-              //     prefixIcon: const Icon(Icons.search),
-              //     border: OutlineInputBorder(
-              //       borderRadius: BorderRadius.circular(9999),
-              //       borderSide: BorderSide.none,
-              //     ),
-              //     filled: true,
-              //     fillColor: Colors.grey.shade200,
-              //   ),
-              //   onChanged: (value) {
-              //     // TODO: 검색 로직
-              //   },
-              // ),
+              padding:
+              const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             ),
             Expanded(
               child: categoriesAsyncValue.when(
                 loading: () =>
                 const Center(child: CircularProgressIndicator()),
-                error: (err, stack) =>
-                    Center(child: Text('에러: $err')),
+                error: (err, stack) => Center(child: Text('에러: $err')),
                 data: (categories) => ListView(
                   padding: EdgeInsets.zero,
                   children: categories.map((category) {

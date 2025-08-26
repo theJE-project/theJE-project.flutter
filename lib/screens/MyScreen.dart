@@ -34,7 +34,6 @@ class _MyScreenState extends ConsumerState<MyScreen> {
   List<Map<String, dynamic>> posts = [];
   List<Map<String, dynamic>> playlists = [];
 
-  // 모든 데이터의 로딩 상태를 한 번에 관리합니다.
   bool _isLoading = true;
 
   final AudioPlayer player = AudioPlayer();
@@ -43,7 +42,6 @@ class _MyScreenState extends ConsumerState<MyScreen> {
   @override
   void initState() {
     super.initState();
-    // 위젯이 처음 생성될 때 게시물과 플레이리스트 데이터를 모두 미리 불러옵니다.
     _loadAllData();
   }
 
@@ -54,7 +52,6 @@ class _MyScreenState extends ConsumerState<MyScreen> {
     super.dispose();
   }
 
-  // 게시물과 플레이리스트 데이터를 동시에 불러오는 함수
   Future<void> _loadAllData() async {
     try {
       final fetchedPosts = await postsService.getFeed();
@@ -101,7 +98,7 @@ class _MyScreenState extends ConsumerState<MyScreen> {
   }
 
   void handleEditSave(User user) {
-    ref.read(userProvider.notifier).logout(); // Replace with actual API call
+    ref.read(userProvider.notifier).logout();
     setState(() {
       showEdit = false;
     });
@@ -144,21 +141,6 @@ class _MyScreenState extends ConsumerState<MyScreen> {
         };
 
         return Scaffold(
-          appBar: AppBar(
-            title: const Text('내 프로필'),
-            backgroundColor: Colors.white,
-            elevation: 1,
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.edit),
-                onPressed: () {
-                  setState(() {
-                    showEdit = !showEdit;
-                  });
-                },
-              ),
-            ],
-          ),
           body: Stack(
             children: [
               SingleChildScrollView(
@@ -175,7 +157,6 @@ class _MyScreenState extends ConsumerState<MyScreen> {
                       ),
                       child: Row(
                         children: [
-                          // 프로필 이미지 (중복 제거하고 하나만 사용)
                           CircleAvatar(
                             radius: 36,
                             backgroundColor: Colors.blue,
@@ -252,7 +233,7 @@ class _MyScreenState extends ConsumerState<MyScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    // 탭
+                    // 탭 (좋아요 제거)
                     Row(
                       children: [
                         Expanded(
@@ -291,28 +272,9 @@ class _MyScreenState extends ConsumerState<MyScreen> {
                             ),
                           ),
                         ),
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () => setState(() => activeTab = 'liked'),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              decoration: BoxDecoration(
-                                border: Border(
-                                  bottom: BorderSide(
-                                      color: activeTab == 'liked'
-                                          ? Colors.blue
-                                          : Colors.grey.shade300,
-                                      width: 2),
-                                ),
-                              ),
-                              child: const Center(child: Text('좋아요')),
-                            ),
-                          ),
-                        ),
                       ],
                     ),
                     const SizedBox(height: 16),
-                    // 탭 내용
                     if (_isLoading)
                       const Center(child: CircularProgressIndicator())
                     else
@@ -321,7 +283,6 @@ class _MyScreenState extends ConsumerState<MyScreen> {
                   ],
                 ),
               ),
-              // 팔로워/팔로잉 모달
               if (showFollowModal) _buildFollowModal(user),
             ],
           ),
@@ -336,13 +297,6 @@ class _MyScreenState extends ConsumerState<MyScreen> {
         return _buildPostsTab(user);
       case 'playlists':
         return _buildPlaylistsTab();
-      case 'liked':
-        return const Center(
-          child: Padding(
-            padding: EdgeInsets.symmetric(vertical: 16),
-            child: Text('좋아요한 음악이 여기에 표시됩니다.'),
-          ),
-        );
       default:
         return const SizedBox.shrink();
     }
@@ -409,7 +363,6 @@ class _MyScreenState extends ConsumerState<MyScreen> {
                 ],
               ),
               const SizedBox(height: 8),
-              // 내용
               if (post['title'] != null && post['title'].toString().isNotEmpty)
                 Text(post['title'],
                     style: const TextStyle(
@@ -419,18 +372,14 @@ class _MyScreenState extends ConsumerState<MyScreen> {
               if (post['content'] != null && post['content'].toString().isNotEmpty)
                 Text(post['content']),
               const SizedBox(height: 8),
-              // 음악 목록
               if (musics.isNotEmpty) _buildMusicList(musics),
               const SizedBox(height: 8),
-              // 이미지 목록
               if (images.isNotEmpty) _buildImageList(images),
               const SizedBox(height: 8),
-              // 통계
               Row(
                 children: [
                   Text('💬 ${post['commentsCount'] ?? 0}'),
                   const SizedBox(width: 16),
-                  Text('❤️ ${post['likesCount'] ?? 0}'),
                 ],
               ),
             ],
@@ -562,9 +511,8 @@ class _MyScreenState extends ConsumerState<MyScreen> {
       itemCount: playlists.length,
       itemBuilder: (context, index) {
         final playlist = playlists[index] as Map<String, dynamic>?;
-        if (playlist == null) {
-          return const SizedBox.shrink();
-        }
+
+        if (playlist == null) return const SizedBox.shrink();
 
         final String title = playlist['title'] ?? '제목 없음';
         final String hashTags = (playlist['hash']?.toString() ?? '');
