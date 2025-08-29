@@ -28307,7 +28307,7 @@ return A.y($async$Qp,r)},
 ai9(a){return A.aZ3(a)},
 aZ3(a){var s=0,r=A.z(t.H),q,p,o
 var $async$ai9=A.A(function(b,c){if(b===1)return A.w(c,r)
-while(true)switch(s){case 0:q=A.c3("http://15.164.93.30:8888/api/notifications/allRead",0,null)
+while(true)switch(s){case 0:q=A.c3("https://thejeteam.p-e.kr/api/notifications/allRead",0,null)
 p=t.N
 o=A.ab(["Content-Type","application/json"],p,p)
 s=2
@@ -95597,7 +95597,7 @@ $1(a){return this.a17(a)},
 a17(a){var s=0,r=A.z(t.pU),q,p,o
 var $async$$1=A.A(function(b,c){if(b===1)return A.w(c,r)
 while(true)switch(s){case 0:s=3
-return A.p(A.a3b(A.c3("http://15.164.93.30:8888/api/categories",0,null)),$async$$1)
+return A.p(A.a3b(A.c3("https://thejeteam.p-e.kr/api/categories",0,null)),$async$$1)
 case 3:o=c
 if(o.b===200){p=J.i0(B.as.oN(0,B.Y.dl(0,o.w),null),new A.aEa(),t.oo)
 p=A.Z(p,p.$ti.h("aj.E"))
@@ -95639,7 +95639,7 @@ if(m==null){n.sis(0,A.Ac(A.ar5(),t.ui))
 A.dC("\ub85c\uadf8\uc778 \uc544\uc774\ub514\uac00 \uc5c6\uc2b5\ub2c8\ub2e4.")
 s=1
 break}s=8
-return A.p(A.a3b(A.c3("http://15.164.93.30:8888/api/users/my?userId="+m,0,null)),$async$qC)
+return A.p(A.a3b(A.c3("https://thejeteam.p-e.kr/api/users/my?userId="+m,0,null)),$async$qC)
 case 8:l=b
 g=t.ui
 if(l.b===200){k=B.Y.dl(0,l.w)
@@ -95736,7 +95736,7 @@ if(k!=null)A.zG(new A.axs(),k,t.z)
 s=1
 break}m.a7(new A.axt(m))
 p=4
-k=A.c3("http://15.164.93.30:8888/api/users",0,null)
+k=A.c3("https://thejeteam.p-e.kr/api/users",0,null)
 j=t.N
 i=A.ab(["Content-Type","application/json"],j,j)
 s=7
@@ -95866,7 +95866,7 @@ uE(){var s=0,r=A.z(t.H),q=1,p=[],o=[],n=this,m,l,k,j,i,h,g,f,e,d
 var $async$uE=A.A(function(a,b){if(a===1){p.push(b)
 s=q}while(true)switch(s){case 0:n.a7(new A.axd(n))
 q=3
-h=A.c3("http://15.164.93.30:8888/api/users/login",0,null)
+h=A.c3("https://thejeteam.p-e.kr/api/users/login",0,null)
 g=t.N
 f=A.ab(["Content-Type","application/json"],g,g)
 s=6
@@ -96757,7 +96757,7 @@ a1j(a){var s=0,r=A.z(t.j),q,p=2,o=[],n=this,m,l,k,j,i,h,g,f
 var $async$pO=A.A(function(b,c){if(b===1){o.push(c)
 s=p}while(true)switch(s){case 0:g=a==null?n.c:a
 p=4
-m=A.c3("http://15.164.93.30:8888/api/communities",0,null).LT(0,A.ab(["category",J.dg(g)],t.N,t.z))
+m=A.c3("https://thejeteam.p-e.kr/api/communities",0,null).LT(0,A.ab(["category",J.dg(g)],t.N,t.z))
 s=7
 return A.p(A.a3b(m),$async$pO)
 case 7:l=c
@@ -96796,7 +96796,7 @@ case 7:m=c
 if(m==null){A.dC("user-id \uc5c6\uc74c")
 q=[]
 s=1
-break}l=A.c3("http://15.164.93.30:8888/api/communities/byUser",0,null).LT(0,A.ab(["category",J.dg(f),"user",m],t.N,t.z))
+break}l=A.c3("https://thejeteam.p-e.kr/api/communities/byUser",0,null).LT(0,A.ab(["category",J.dg(f),"user",m],t.N,t.z))
 s=8
 return A.p(A.a3b(l),$async$tD)
 case 8:k=c
@@ -96857,7 +96857,7 @@ if(m==null){A.dC("user-id \uc5c6\uc74c")
 h=A.b([],t.H7)
 q=h
 s=1
-break}l=A.c3("http://15.164.93.30:8888/api/followers/"+(a==="followers"?"follower":"followee")+"/"+m,0,null)
+break}l=A.c3("https://thejeteam.p-e.kr/api/followers/"+(a==="followers"?"follower":"followee")+"/"+m,0,null)
 s=8
 return A.p(A.a3b(l),$async$pQ)
 case 8:k=c
